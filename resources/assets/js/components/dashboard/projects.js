@@ -54,7 +54,7 @@
             name:               $('#project_name').val(),
             description:        $('#project_description').val(),
             repository:         $('#project_repository').val(),
-            branch:             $('#project_branch').val(), 
+            branch:             $('#project_branch').val(),
             deploy_path:        $('#project_deploy_path').val(),
             allow_other_branch: $('#project_allow_other_branch').is(':checked')
         }, {
@@ -231,6 +231,35 @@
             $('#webhook').fadeIn(interval).val(data.url);
         }).always(function () {
             icon.removeClass('piplin-spin');
+            target.removeAttr('disabled');
+        });
+    });
+
+    $('#webhook_branch_env_link').on('change', function(event) {
+        var target = $(event.currentTarget);
+        var project_id = target.data('project-id');
+        var type = target.data('type');
+
+        var url = '/webhook/' + project_id + '/branch-env-link';
+
+        if (type == 'build') {
+            url += '/build';
+        }
+
+        target.attr('disabled', 'disabled');
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            dataType: 'json',
+            data: {
+                'value': $(this).prop('checked') ? 1 : 0
+            }
+        }).fail(function (response) {
+
+        }).done(function (data) {
+
+        }).always(function () {
             target.removeAttr('disabled');
         });
     });

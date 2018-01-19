@@ -2,6 +2,19 @@
 <div class="callout">
     <h4>{{ trans('commands.build_webhook') }} <i class="piplin piplin-help text-gray" id="show_help" data-toggle="modal" data-backdrop="static" data-target="#help"></i></h4>
     <input id="webhook" value="{{ $project->build_webhook }}"> <button class="clipboard btn-link" data-clipboard-target="#webhook"><i class="piplin piplin-copy"></i></button> <button class="btn-link" id="new_webhook" title="{{ trans('commands.generate_webhook') }}" data-project-id="{{ $project->id }}" data-type="build"><i class="piplin piplin-refresh"></i></button>
+    <div class="form-group">
+        <div class="col-sm-9">
+            <div class="checkbox">
+                <label for="webhook_branch_env_link">
+                    <input type="checkbox" value="1" name="webhook_branch_env_link" id="webhook_branch_env_link"
+                        data-project-id="{{ $project->id }}" data-type="build"
+                        {{ ($project->build_webhook_branch_env_link == 1) ? 'checked="checked"' : '' }}
+                    />
+                    {{ trans('commands.build_webhook_branch_env_link') }}
+                </label>
+            </div>
+        </div>
+    </div>
 </div>
 @endif
 <div class="box">

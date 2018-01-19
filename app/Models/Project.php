@@ -76,6 +76,8 @@ class Project extends Model implements HasPresenter
         'url',
         'build_url',
         'allow_other_branch',
+	    'build_webhook_branch_env_link',
+	    'deploy_webhook_branch_env_link'
     ];
 
     /**

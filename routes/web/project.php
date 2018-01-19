@@ -173,6 +173,13 @@ Route::group([
                     'as'         => 'webhook.refresh',
                     'uses'       => 'WebhookController@refresh',
                 ]);
+	
+		        // Webhook branch <-> env link
+		        Route::post('webhook/{project}/branch-env-link/{type?}', [
+			        'middleware' => 'admin',
+			        'as'         => 'webhook.branch-env-link',
+			        'uses'       => 'WebhookController@branchEnvLink',
+		        ]);
 
                 // Artifact
                 Route::get('artifact/{project}/download/{artifact}', [
