@@ -69,7 +69,7 @@ class IncomingWebhookController extends Controller
 
         $success = false;
         if ($deployPlan && $deployPlan->environments->count() > 0) {
-            $payload = $this->parseWebhookRequest($request, $project);
+            $payload = $this->parseWebhookRequest($request, $project, false);
 
             if (is_array($payload) && ($project->allow_other_branch || $project->branch === $payload['branch'])) {
                 $this->abortQueued($project->id);
@@ -102,7 +102,7 @@ class IncomingWebhookController extends Controller
 
         $success = false;
         if ($buildPlan && $buildPlan->servers->count() > 0) {
-            $payload = $this->parseWebhookRequest($request, $project);
+            $payload = $this->parseWebhookRequest($request, $project, true);
 
             if (is_array($payload) && ($project->allow_other_branch || $project->branch === $payload['branch'])) {
                 $this->abortQueued($project->id);
@@ -125,16 +125,17 @@ class IncomingWebhookController extends Controller
      *
      * @param Request $request
      * @param Project $project
+     * @param boolean $build
      *
      * @return mixed Either an array of parameters for the task config, or false if it is invalid.
      */
-    private function parseWebhookRequest(Request $request, Project $project)
+    private function parseWebhookRequest(Request $request, Project $project, $build)
     {
         foreach ($this->services as $service) {
             $integration = new $service($request);
 
             if ($integration->isRequestOrigin()) {
-                return $this->appendProjectSettings($integration->handlePush(), $request, $project);
+                return $this->appendProjectSettings($integration->handlePush(), $request, $project, $build);
             }
         }
 
@@ -148,10 +149,11 @@ class IncomingWebhookController extends Controller
      * @param mixed   $payload
      * @param Request $request
      * @param Project $project
+     * @param boolean $build
      *
      * @return mixed Either an array of the complete task config, or false if it is invalid.
      */
-    private function appendProjectSettings($payload, Request $request, Project $project)
+    private function appendProjectSettings($payload, Request $request, Project $project, $build)
     {
         // If the payload is empty return false
         if (!is_array($payload) || !count($payload)) {
@@ -191,7 +193,17 @@ class IncomingWebhookController extends Controller
                                                       ->intersect($valid)
                                                       ->toArray();
         }
-
+        
+        // Use branch name as environment name, if project option is enabled and matching environment name exists
+	    $field = ($build ? 'build' : 'deploy') . '_webhook_branch_env_link';
+        $planMethod = ($build ? 'build' : 'deploy') . 'Plan';
+	    if ($project->$field) {
+	    	$environment = $project->$planMethod->environments->where('name', $payload['branch'])->first();
+		    if (!is_null($environment)) {
+	    		$payload['environments'] = [$environment->id];
+		    }
+	    }
+	    
         // Check if the request has an update_only query string and if so check the branch matches
         if ($request->has('update_only') && $request->get('update_only') !== false) {
             $task = Task::where('project_id', $project->id)
