@@ -201,6 +201,9 @@ class IncomingWebhookController extends Controller
 	    	$environment = $project->$planMethod->environments->where('name', $payload['branch'])->first();
 		    if (!is_null($environment)) {
 	    		$payload['environments'] = [$environment->id];
+		    } else {
+		    	// Abort
+		    	return false;
 		    }
 	    }
 	    
